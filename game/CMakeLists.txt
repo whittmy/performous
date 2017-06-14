@@ -62,7 +62,7 @@ set(SOURCES ${SOURCE_FILES} ${HEADER_FILES} ${RESOURCE_FILES})
 
 # Libraries
 
-find_package(Boost 1.36 REQUIRED COMPONENTS thread date_time program_options regex filesystem system)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread date_time program_options regex filesystem system locale)
 include_directories(${Boost_INCLUDE_DIRS})
 list(APPEND LIBS ${Boost_LIBRARIES})
 
@@ -73,7 +73,7 @@ include_directories(${LibEpoxy_INCLUDE_DIRS})
 list(APPEND LIBS ${LibEpoxy_LIBRARIES})
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} SDL2 PangoCairo LibRSVG LibXML++ AVFormat AVResample SWScale Z Jpeg Png PortAudio Fontconfig JSONCPP Cppnetlib Crypto Ssl GetTextPo)
+foreach(lib ${OUR_LIBS} SDL2 PangoCairo LibRSVG LibXML++ AVFormat AVResample SWScale Z Jpeg Png PortAudio Fontconfig JSONCPP Cppnetlib Crypto Ssl)
 	find_package(${lib} REQUIRED)
 	message(STATUS "${lib} includes: ${${lib}_INCLUDE_DIRS}")
 	include_directories(${${lib}_INCLUDE_DIRS})

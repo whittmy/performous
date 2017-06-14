@@ -48,6 +48,7 @@ public:
 
 private:
 	void StartServer();
+	std::map<std::string, std::string> GenerateLocaleDict();
 	boost::shared_ptr<Song> GetSongFromJSON(std::string JsonDoc);
 	boost::shared_ptr<boost::thread> m_serverThread;
 	boost::shared_ptr<http_server> m_server;

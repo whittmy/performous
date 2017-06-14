@@ -1,8 +1,11 @@
 ﻿#include "webserver.hh"
-#include <fstream>
-#include <gettext-po.h>
 #ifdef USE_CPPNETLIB
 #include <boost/network/protocol/http/server.hpp>
+
+#include <boost/locale.hpp>
+#include <iostream>
+using namespace std;
+using namespace boost::locale;
 
 namespace http = boost::network::http;
 
@@ -99,47 +102,22 @@ http_server::response WebServer::GETresponse(const http_server::request &request
 	} else if(request.destination == "/api/getplaylistTimeout") {
 		return http_server::response::stock_reply(http_server::response::ok, std::to_string(config["game/playlist_screen_timeout"].i()));
 	} else if(request.destination.find("/api/language") == 0) {
-		std::string lang = "/";
-		lang += request.destination.substr(request.destination.find_last_of("/") + 1);
-		po_xerror_handler h;
-		const char* path = (getLocaleDir().c_str()+lang+"/LC_MESSAGES/Performous.mo").c_str();
+		generator gen;
+	    // Specify location of dictionaries
+	    gen.add_messages_path(getLocaleDir().c_str());
+	    gen.add_messages_domain("Performous");
+	    // Generate locales and imbue them to iostream
+	    locale::global(gen(""));
+
+    	map<std::string, std::string> m = GenerateLocaleDict();
+		
 		Json::Value jsonRoot = Json::arrayValue;
-		std::clog << "try to read file" << std::endl;
-		po_file_t file = po_file_read ("/home/baklap4/performous-dev/lang/nl.po", &h);
-std::clog << "file is read" << std::endl;
-		if (file != NULL)
-		{
-			std::clog << "Entered IF" << std::endl;
-		  const char * const *domains = po_file_domains (file);
-		  std::clog << "INIT domains" << std::endl;
-		  const char * const *domainp;
-
-		  for (domainp = domains; *domainp; domainp++)
-			{
-			  const char *domain = *domainp;
-			  po_message_iterator_t iterator = po_message_iterator (file, domain);
-
-			  for (;;)
-				{
-				  po_message *message = po_next_message (iterator);
-
-				  if (message == NULL)
-				    break;
-				  {
-				    const char *msgid = po_message_msgid (message);
-				    const char *msgstr = po_message_msgstr (message);
-					Json::Value Translation = Json::objectValue;
-					Translation["msgid"] = msgid;
-					Translation["msgstr"] = msgstr;
-					jsonRoot.append(Translation);
-				  }
-				}
-			  po_message_iterator_free (iterator);
-			}
-		} else {
-			std::clog << "File is null" << std::endl;
+		for (std::map<std::string, std::string>::iterator it=m.begin(); it!=m.end(); ++it) {
+    		Json::Value Translation = Json::objectValue;
+    		Translation["msgid"] = it->first;
+    		Translation["msgstr"] = it->second;
+    		jsonRoot.append(Translation);
 		}
-		po_file_free (file);
 
         return http_server::response::stock_reply(http_server::response::ok, jsonRoot.toStyledString());
 }
@@ -248,6 +226,15 @@ http_server::response WebServer::POSTresponse(const http_server::request &reques
 	} else {
 		return http_server::response::stock_reply(http_server::response::ok, "not yet implemented");
 	}
+}
+
+std::map<std::string, std::string> WebServer::GenerateLocaleDict() {
+	map<std::string, std::string> m;
+
+    m.insert(pair<std::string, std::string>("Quit", translate("Quit").str()));
+	m.insert(pair<std::string, std::string>("OFF", translate("OFF").str()));
+
+    return m;
 }
 
 boost::shared_ptr<Song> WebServer::GetSongFromJSON(std::string JsonDoc) {
