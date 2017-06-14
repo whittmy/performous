@@ -1,4 +1,6 @@
 ﻿#include "webserver.hh"
+#include <fstream>
+#include <gettext-po.h>
 #ifdef USE_CPPNETLIB
 #include <boost/network/protocol/http/server.hpp>
 
@@ -96,7 +98,52 @@ http_server::response WebServer::GETresponse(const http_server::request &request
 		return http_server::response::stock_reply(http_server::response::ok, jsonRoot.toStyledString());
 	} else if(request.destination == "/api/getplaylistTimeout") {
 		return http_server::response::stock_reply(http_server::response::ok, std::to_string(config["game/playlist_screen_timeout"].i()));
-	} else {
+	} else if(request.destination.find("/api/language") == 0) {
+		std::string lang = "/";
+		lang += request.destination.substr(request.destination.find_last_of("/") + 1);
+		po_xerror_handler h;
+		const char* path = (getLocaleDir().c_str()+lang+"/LC_MESSAGES/Performous.mo").c_str();
+		Json::Value jsonRoot = Json::arrayValue;
+		std::clog << "try to read file" << std::endl;
+		po_file_t file = po_file_read ("/home/baklap4/performous-dev/lang/nl.po", &h);
+std::clog << "file is read" << std::endl;
+		if (file != NULL)
+		{
+			std::clog << "Entered IF" << std::endl;
+		  const char * const *domains = po_file_domains (file);
+		  std::clog << "INIT domains" << std::endl;
+		  const char * const *domainp;
+
+		  for (domainp = domains; *domainp; domainp++)
+			{
+			  const char *domain = *domainp;
+			  po_message_iterator_t iterator = po_message_iterator (file, domain);
+
+			  for (;;)
+				{
+				  po_message *message = po_next_message (iterator);
+
+				  if (message == NULL)
+				    break;
+				  {
+				    const char *msgid = po_message_msgid (message);
+				    const char *msgstr = po_message_msgstr (message);
+					Json::Value Translation = Json::objectValue;
+					Translation["msgid"] = msgid;
+					Translation["msgstr"] = msgstr;
+					jsonRoot.append(Translation);
+				  }
+				}
+			  po_message_iterator_free (iterator);
+			}
+		} else {
+			std::clog << "File is null" << std::endl;
+		}
+		po_file_free (file);
+
+        return http_server::response::stock_reply(http_server::response::ok, jsonRoot.toStyledString());
+}
+	else {
 		//other text files
 		try {
 			std::string destination = request.destination;
