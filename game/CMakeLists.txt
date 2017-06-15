@@ -81,16 +81,6 @@ foreach(lib ${OUR_LIBS} SDL2 PangoCairo LibRSVG LibXML++ AVFormat AVResample SWS
 	add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-find_package(Gettext)
-if(Gettext_FOUND)
-	include_directories(${Gettext_INCLUDE_DIRS})
-	list(APPEND LIBS ${Gettext_LIBRARIES})
-	add_definitions("-DUSE_GETTEXT")
-	message(STATUS "Internationalization: Enabled")
-else()
-	message(STATUS "Internationalization: Disabled (libintl not found)")
-endif()
-
 option(ENABLE_MIDI "Enable support for MIDI hardware (e-drums with USB/MIDI connection)." ON)
 if(ENABLE_MIDI)
 	find_package(PortMidi)
