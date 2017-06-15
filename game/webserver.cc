@@ -4,8 +4,6 @@
 
 #include <boost/locale.hpp>
 #include <iostream>
-using namespace std;
-using namespace boost::locale;
 
 namespace http = boost::network::http;
 
@@ -222,12 +220,40 @@ http_server::response WebServer::POSTresponse(const http_server::request &reques
 }
 
 std::map<std::string, std::string> WebServer::GenerateLocaleDict() {
-	map<std::string, std::string> m;
-
-    m.insert(pair<std::string, std::string>("Quit", _("Quit")));
-	m.insert(pair<std::string, std::string>("OFF", _("OFF")));
-
+	std::vector<std::string> translationKeys = GetTranslationKeys();
+    
+    map<std::string, std::string> m;
+    for(auto translationKey : translationKeys) {
+		m.insert(pair<std::string, std::string>(translationKey, _(translationKey)));
+	}
     return m;
+}
+
+std::vector<std::string> WebServer::GetTranslationKeys() {
+	std::vector<std::string> tranlationKeys = { 
+		"Performous web frontend",
+		"View database",
+		"View playlist",
+		"Search & Add",
+		"Sort by:",
+		"Artist",
+		"Title",
+		"Language",
+		"Edition",
+		"Creator",
+		"Sort order:",
+		"Normal",
+		"Inverted",
+		"Refresh database",
+		"Upcoming songs:",
+		"Refresh Playlist",
+		"Web interface by Niek Nooijens & Arjan Speiard, for full credits regarding Performous see /docs/Authors.txt",
+		"Search",
+		"Available songs:",
+		"Search for songs"
+	};
+
+	return tranlationKeys;
 }
 
 boost::shared_ptr<Song> WebServer::GetSongFromJSON(std::string JsonDoc) {
